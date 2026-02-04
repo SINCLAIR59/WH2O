@@ -13,7 +13,7 @@ class WaterMonitorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Water Quality Monitor',
+      title: 'Water Quality Monitor!',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         fontFamily: 'Roboto',

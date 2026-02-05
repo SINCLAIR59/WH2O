@@ -5,7 +5,7 @@
 // 1. ดึงข้อมูลจาก API
 // 2. จัดการ Cache (เก็บข้อมูลไว้ไม่ต้องดึงซ้ำ)
 // 3. จัดการ Error
-// 
+//
 // Cache มี 2 ระดับ:
 // - Memory Cache: เก็บในแรม (เร็วที่สุด แต่หายเมื่อปิดแอป)
 // - Local Cache: เก็บในเครื่อง (ช้ากว่า แต่อยู่ถาวร)
@@ -20,34 +20,34 @@ class WaterService {
   // ==========================================
   // ค่าคงที่ (Constants)
   // ==========================================
-  
+
   /// Key สำหรับเก็บ cache ใน Local Storage
   static const _cacheKey = 'water_cache';
-  
+
   /// URL ของ API ที่ดึงข้อมูล
   static const _apiUrl = 'https://home.kongyot.online/api/water_list.php?limit=9999';
-  
+
   /// API Key สำหรับยืนยันตัวตน
   static const _apiKey = 'y4VkYh2l6e7oxvMZuRSfCKtOcuQuZcJrlWjQLXK9plaFwJxQkNlrHbzz9Pb9cSVd';
 
   // ==========================================
   // ตัวแปร Cache
   // ==========================================
-  
+
   /// Memory Cache - เก็บข้อมูลในแรม (เร็วมาก แต่หายเมื่อปิดแอป)
   static List<dynamic>? _memoryCache;
 
   // ==========================================
   // Methods (ฟังก์ชัน)
   // ==========================================
-  
+
   /// ดึงข้อมูลทั้งหมด (ใช้ cache ก่อนเพื่อความเร็ว)
-  /// 
+  ///
   /// ลำดับการทำงาน:
   /// 1. เช็ค Memory Cache → ถ้ามี ใช้เลย (เร็วที่สุด)
   /// 2. เช็ค Local Cache → ถ้ามี ใช้เลย (เร็วรองลงมา)
   /// 3. ดึงจาก API → ถ้าไม่มี cache (ช้าที่สุด)
-  /// 
+  ///
   /// Returns: List ของข้อมูลน้ำทั้งหมด
   static Future<List<dynamic>> fetchAll() async {
     try {
@@ -64,7 +64,7 @@ class WaterService {
       // ==========================================
       final prefs = await SharedPreferences.getInstance(); // เปิด Local Storage
       final cached = prefs.getString(_cacheKey);           // อ่านข้อมูล cache
-      
+
       if (cached != null) {
         print('✅ Using local cache');
         final decoded = jsonDecode(cached) as List<dynamic>; // แปลง JSON เป็น List
@@ -76,7 +76,7 @@ class WaterService {
       // ขั้นที่ 3: ดึงจาก API (ไม่มี cache)
       // ==========================================
       print('🔄 Fetching from API: $_apiUrl');
-      
+
       // ส่ง HTTP GET request พร้อม headers
       final response = await http.get(
         Uri.parse(_apiUrl),
@@ -137,7 +137,7 @@ class WaterService {
       await prefs.setString(_cacheKey, jsonEncode(data)); // เก็บใน Local Cache
 
       return data;
-      
+
     } catch (e, stackTrace) {
       // ==========================================
       // จัดการ Error
@@ -150,19 +150,19 @@ class WaterService {
 
   /// ล้าง cache ทั้งหมด
   /// ใช้เมื่อ: Pull to refresh หรือต้องการข้อมูลใหม่
-  /// 
+  ///
   /// การทำงาน:
   /// 1. ลบ Memory Cache
   /// 2. ลบ Local Cache
   /// 3. ครั้งต่อไปที่เรียก fetchAll() จะดึงจาก API ใหม่
   static Future<void> clearCache() async {
     print('🗑️ Clearing cache...');
-    
+
     _memoryCache = null;  // ลบ Memory Cache
-    
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_cacheKey);  // ลบ Local Cache
-    
+
     print('✅ Cache cleared');
   }
 }

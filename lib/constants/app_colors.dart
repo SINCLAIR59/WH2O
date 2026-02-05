@@ -82,10 +82,10 @@ class AppConstants {
   static const Duration autoUpdateInterval = Duration(seconds: 10);
 
   /// ระยะเวลา Animation หลัก (1.5 วินาที)
-  static const Duration animationDuration = Duration(milliseconds: 1500);
+  static const Duration animationDuration = Duration(milliseconds: 5);
   
   /// ระยะเวลา Tween Animation (0.8 วินาที)
-  static const Duration tweenDuration = Duration(milliseconds: 800);
+  static const Duration tweenDuration = Duration(milliseconds: 30);
 
   // ==========================================
   // ขนาด (Sizes)

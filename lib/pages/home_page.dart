@@ -171,7 +171,7 @@ class _WaterHomePageState extends State<WaterHomePage> with SingleTickerProvider
         ),
       ),
       // Navigation Bar ด้านล่าง
-      bottomNavigationBar: _buildBottomNav(),
+      //bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -701,57 +701,57 @@ class _WaterHomePageState extends State<WaterHomePage> with SingleTickerProvider
   /// - pH
   /// - O₂ (ออกซิเจน)
   /// - Salt (ความเค็ม)
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // ใช้ NavItem widget จาก sensor_card.dart
-              NavItem(
-                icon: Icons.thermostat,
-                label: 'Temp',
-                index: 0,
-                selectedIndex: _selectedTab,
-                onTap: () => setState(() => _selectedTab = 0),
-              ),
-              NavItem(
-                icon: Icons.water_drop,
-                label: 'pH',
-                index: 1,
-                selectedIndex: _selectedTab,
-                onTap: () => setState(() => _selectedTab = 1),
-              ),
-              NavItem(
-                icon: Icons.water,
-                label: 'O₂',
-                index: 2,
-                selectedIndex: _selectedTab,
-                onTap: () => setState(() => _selectedTab = 2),
-              ),
-              NavItem(
-                icon: Icons.grain,
-                label: 'Salt',
-                index: 3,
-                selectedIndex: _selectedTab,
-                onTap: () => setState(() => _selectedTab = 3),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _buildBottomNav() {
+  //   return Container(
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.black.withOpacity(0.05),
+  //           blurRadius: 10,
+  //           offset: const Offset(0, -4),
+  //         ),
+  //       ],
+  //     ),
+  //     child: SafeArea(
+  //       child: Padding(
+  //         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+  //         child: Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //           children: [
+  //             // ใช้ NavItem widget จาก sensor_card.dart
+  //             NavItem(
+  //               icon: Icons.thermostat,
+  //               label: 'Temp',
+  //               index: 0,
+  //               selectedIndex: _selectedTab,
+  //               onTap: () => setState(() => _selectedTab = 0),
+  //             ),
+  //             NavItem(
+  //               icon: Icons.water_drop,
+  //               label: 'pH',
+  //               index: 1,
+  //               selectedIndex: _selectedTab,
+  //               onTap: () => setState(() => _selectedTab = 1),
+  //             ),
+  //             NavItem(
+  //               icon: Icons.water,
+  //               label: 'O₂',
+  //               index: 2,
+  //               selectedIndex: _selectedTab,
+  //               onTap: () => setState(() => _selectedTab = 2),
+  //             ),
+  //             NavItem(
+  //               icon: Icons.grain,
+  //               label: 'Salt',
+  //               index: 3,
+  //               selectedIndex: _selectedTab,
+  //               onTap: () => setState(() => _selectedTab = 3),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 }

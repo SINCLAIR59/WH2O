@@ -1,11 +1,34 @@
-class WaterData {
-  final int id;
-  final double temperature;
-  final double ph;
-  final double oxygen;
-  final double salinity;
-  final DateTime measuredAt;
+// ============================================
+// 📊 DATA.DART - โครงสร้างข้อมูลน้ำ
+// ============================================
+// ไฟล์นี้กำหนดโครงสร้างของข้อมูลคุณภาพน้ำ
+// ทำให้โค้ดมี Type Safety และอ่านง่าย
+// ข้อดี:
+// 1. รู้ประเภทข้อมูลแน่นอน (temperature เป็น double)
+// 2. IDE ช่วย autocomplete
+// 3. แปลง JSON เป็น Object ได้ง่าย
+// ============================================
 
+/// Model สำหรับเก็บข้อมูลคุณภาพน้ำ
+/// ประกอบด้วย: อุณหภูมิ, pH, ออกซิเจน, ความเค็ม, เวลาวัด
+class WaterData {
+  // ==========================================
+  // Properties (ข้อมูลที่เก็บ)
+  // ==========================================
+  
+  final int id;                // รหัสข้อมูล
+  final double temperature;    // อุณหภูมิ (°C)
+  final double ph;             // ค่า pH (7.0 - 8.5)
+  final double oxygen;         // ออกซิเจนละลายน้ำ (mg/L)
+  final double salinity;       // ความเค็ม (ppt)
+  final DateTime measuredAt;   // เวลาที่วัด
+
+  // ==========================================
+  // Constructor
+  // ==========================================
+  
+  /// สร้าง WaterData object
+  /// ต้องระบุค่าทุกตัวแปร (required)
   WaterData({
     required this.id,
     required this.temperature,
@@ -15,32 +38,65 @@ class WaterData {
     required this.measuredAt,
   });
 
+  // ==========================================
+  // Factory Constructor
+  // ==========================================
+  
+  /// แปลง JSON (จาก API) เป็น WaterData object
+  /// 
+  /// ตัวอย่าง JSON:
+  /// {
+  ///   "id": "1",
+  ///   "temperature": "28.5",
+  ///   "ph": "7.8",
+  ///   "oxygen": "6.2",
+  ///   "salinity": "15.3",
+  ///   "measured_at": "2024-02-05 10:30:00"
+  /// }
   factory WaterData.fromJson(Map<String, dynamic> json) {
     return WaterData(
-      id: _toInt(json['id']),
-      temperature: _toDouble(json['temperature']),
-      ph: _toDouble(json['ph']),
-      oxygen: _toDouble(json['oxygen']),
-      salinity: _toDouble(json['salinity']),
-      measuredAt: DateTime.parse(json['measured_at']),
+      id: _toInt(json['id']),                      // แปลง id เป็น int
+      temperature: _toDouble(json['temperature']), // แปลง temperature เป็น double
+      ph: _toDouble(json['ph']),                   // แปลง ph เป็น double
+      oxygen: _toDouble(json['oxygen']),           // แปลง oxygen เป็น double
+      salinity: _toDouble(json['salinity']),       // แปลง salinity เป็น double
+      measuredAt: DateTime.parse(json['measured_at']), // แปลง string เป็น DateTime
     );
   }
 
-  /// Helper: แปลงค่าเป็น int (รองรับทั้ง String และ num)
+  // ==========================================
+  // Helper Methods (ฟังก์ชันช่วย)
+  // ==========================================
+  
+  /// แปลงค่าต่างๆ เป็น int
+  /// รองรับทั้ง: int, double, String, null
+  /// 
+  /// ตัวอย่าง:
+  /// _toInt(123) → 123
+  /// _toInt("456") → 456
+  /// _toInt(78.9) → 78
+  /// _toInt(null) → 0
   static int _toInt(dynamic value) {
-    if (value == null) return 0;
-    if (value is int) return value;
-    if (value is double) return value.toInt();
-    if (value is String) return int.parse(value);
-    return 0;
+    if (value == null) return 0;           // ถ้าเป็น null ให้คืน 0
+    if (value is int) return value;        // ถ้าเป็น int อยู่แล้ว คืนเลย
+    if (value is double) return value.toInt(); // ถ้าเป็น double แปลงเป็น int
+    if (value is String) return int.parse(value); // ถ้าเป็น String แปลงเป็น int
+    return 0;                              // กรณีอื่นๆ ให้คืน 0
   }
 
-  /// Helper: แปลงค่าเป็น double (รองรับทั้ง String และ num)
+  /// แปลงค่าต่างๆ เป็น double
+  /// รองรับทั้ง: double, int, String, null
+  /// 
+  /// ตัวอย่าง:
+  /// _toDouble(12.5) → 12.5
+  /// _toDouble("34.6") → 34.6
+  /// _toDouble(78) → 78.0
+  /// _toDouble(null) → 0.0
   static double _toDouble(dynamic value) {
-    if (value == null) return 0.0;
-    if (value is double) return value;
-    if (value is int) return value.toDouble();
-    if (value is String) return double.parse(value);
-    return 0.0;
+    if (value == null) return 0.0;         // ถ้าเป็น null ให้คืน 0.0
+    if (value is double) return value;     // ถ้าเป็น double อยู่แล้ว คืนเลย
+    if (value is int) return value.toDouble(); // ถ้าเป็น int แปลงเป็น double
+    if (value is String) return double.parse(value); // ถ้าเป็น String แปลงเป็น double
+    return 0.0;                            // กรณีอื่นๆ ให้คืน 0.0
   }
 }

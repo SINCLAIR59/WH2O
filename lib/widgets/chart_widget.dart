@@ -18,9 +18,9 @@ class SevenDayChart extends StatefulWidget {
   final List<dynamic> waterData; // ข้อมูลทั้งหมดจาก API
 
   const SevenDayChart({
-    Key? key,
+    super.key,
     required this.waterData,
-  }) : super(key: key);
+  });
 
   @override
   State<SevenDayChart> createState() => _SevenDayChartState();
@@ -89,7 +89,7 @@ class _SevenDayChartState extends State<SevenDayChart> {
     switch (index) {
       case 0: // Temperature
         return {
-          'label': 'Temperature',
+          'label': 'อุณหภูมิ',
           'unit': '°C',
           'key': 'temperature',
           'color': Colors.orange,
@@ -99,7 +99,7 @@ class _SevenDayChartState extends State<SevenDayChart> {
         };
       case 1: // pH
         return {
-          'label': 'pH Level',
+          'label': 'ค่า pH',
           'unit': '',
           'key': 'ph',
           'color': Colors.green,
@@ -109,7 +109,7 @@ class _SevenDayChartState extends State<SevenDayChart> {
         };
       case 2: // Oxygen
         return {
-          'label': 'Oxygen',
+          'label': 'ออกซิเจน',
           'unit': 'mg/L',
           'key': 'oxygen',
           'color': Colors.blue,
@@ -119,7 +119,7 @@ class _SevenDayChartState extends State<SevenDayChart> {
         };
       case 3: // Salinity
         return {
-          'label': 'Salinity',
+          'label': 'ความเค็ม',
           'unit': 'ppt',
           'key': 'salinity',
           'color': Colors.purple,
@@ -207,7 +207,7 @@ class _SevenDayChartState extends State<SevenDayChart> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    '7 Days History',
+                    'ข้อมูลย้อนหลัง',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -307,7 +307,7 @@ class _SevenDayChartState extends State<SevenDayChart> {
                         return Padding(
                           padding: const EdgeInsets.only(top: 8),
                           child: Text(
-                            'Day $dayNum',
+                            '$dayNum',
                             style: const TextStyle(
                               fontSize: 10,
                               color: Colors.grey,

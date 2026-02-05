@@ -19,7 +19,7 @@ void main() {
 
 /// Class หลักของแอป - ตั้งค่าพื้นฐานทั้งหมด
 class WaterMonitorApp extends StatelessWidget {
-  const WaterMonitorApp({Key? key}) : super(key: key);
+  const WaterMonitorApp({super.key});
 
   @override
   Widget build(BuildContext context) {

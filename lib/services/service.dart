@@ -37,6 +37,11 @@ class WaterService {
   /// Memory Cache - เก็บข้อมูลในแรม (เร็วมาก แต่หายเมื่อปิดแอป)
   static List<dynamic>? _memoryCache;
 
+
+  static List<dynamic> getCachedData() {
+    return _memoryCache ?? [];
+  }
+
   // ==========================================
   // Methods (ฟังก์ชัน)
   // ==========================================
@@ -54,9 +59,9 @@ class WaterService {
       // ==========================================
       // ขั้นที่ 1: เช็ค Memory Cache
       // ==========================================
-      if (_memoryCache != null) {
+      if (_memoryCache != null && _memoryCache!.isNotEmpty) {
         print('✅ Using memory cache (${_memoryCache!.length} records)');
-        return _memoryCache!; // มี cache ในแรม → คืนเลย (เร็วมาก!)
+        return _memoryCache!;
       }
 
       // ==========================================
@@ -158,7 +163,7 @@ class WaterService {
   static Future<void> clearCache() async {
     print('🗑️ Clearing cache...');
 
-    _memoryCache = null;  // ลบ Memory Cache
+    _memoryCache = null; // ลบ Memory Cache
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_cacheKey);  // ลบ Local Cache

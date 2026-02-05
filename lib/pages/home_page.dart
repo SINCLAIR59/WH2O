@@ -74,7 +74,7 @@ class _WaterHomePageState extends State<WaterHomePage> with SingleTickerProvider
     // ถ้าไม่มี cache ถึงจะเรียก API
     _updateTimer = Timer.periodic(AppConstants.autoUpdateInterval, (timer) {
       debugPrint('⏰ Auto-refresh triggered (10s timer)');
-      _loadData();
+      _loadDataFromCache();
     });
 
     debugPrint('✅ Auto-refresh system initialized (every 10 seconds)');
@@ -92,6 +92,10 @@ class _WaterHomePageState extends State<WaterHomePage> with SingleTickerProvider
   // ==========================================
   // Data Loading Methods
   // ==========================================
+  int _currentIndex = 0;
+  int _cursor = 0;
+  static const int _windowSize = 10;
+
 
   /// โหลดข้อมูลจาก Service (ใช้ Cache ก่อน!)
   ///
@@ -139,6 +143,34 @@ class _WaterHomePageState extends State<WaterHomePage> with SingleTickerProvider
       }
     }
   }
+
+  void _loadDataFromCache() {
+    final data = WaterService.getCachedData();
+
+    if (data.isEmpty) return;
+
+    // 🧠 วน index ถ้าถึงท้าย
+    if (_currentIndex >= data.length) {
+      _currentIndex = 0;
+    }
+
+    final record = data[_currentIndex];
+
+    setState(() {
+      _currentData = WaterData.fromJson(record);
+
+      // ถ้าอยากให้กราฟเลื่อนไปด้วย
+      _allData = data.sublist(
+        (_currentIndex - 50).clamp(0, data.length),
+        _currentIndex + 1,
+      );
+
+      _isLoading = false;
+    });
+
+    _currentIndex++; // 👉 ขยับไปตัวถัดไป
+  }
+
 
   /// Refresh แบบบังคับ (ลบ cache และดึงข้อมูลใหม่จาก API)
   /// ใช้เมื่อ: กดปุ่ม Refresh หรือ Pull to Refresh
@@ -192,14 +224,13 @@ class _WaterHomePageState extends State<WaterHomePage> with SingleTickerProvider
                             const SizedBox(height: 20),
                             _buildSensorGrid(),      // การ์ด Oxygen + Salinity
                             const SizedBox(height: 20),
-                            _buildLastUpdateInfo(),  // ข้อมูลเวลาอัพเดทล่าสุด
 
                             // 📊 กราฟ 7 วัน (ใหม่!)
                             if (_allData.isNotEmpty) ...[
                               const SizedBox(height: 4),
                               SevenDayChart(waterData: _allData),
                             ],
-
+                            _buildLastUpdateInfo(),  // ข้อมูลเวลาอัพเดทล่าสุด
                             const SizedBox(height: 20),
                           ],
                         ),

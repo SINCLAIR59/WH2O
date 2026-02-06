@@ -10,6 +10,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:wh2o/pages/home_page.dart';
+import 'package:wh2o/pages/register.dart';
+import 'package:wh2o/pages/login.dart';
 
 /// ฟังก์ชันหลักที่ Flutter เรียกตอนเปิดแอป
 /// คิดเหมือนปุ่ม "เปิดเครื่อง" ของแอป
@@ -37,7 +39,7 @@ class WaterMonitorApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       
       // กำหนดหน้าแรกที่จะแสดงตอนเปิดแอป
-      home: const WaterHomePage(),
+      home: const LoginPage(),
     );
   }
 }

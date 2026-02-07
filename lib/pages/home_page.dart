@@ -688,7 +688,14 @@ class _WaterHomePageState extends State<WaterHomePage>
               ),
               NavItem(
                 icon: Icons.clear_all,
-                label: 'รายการ',
+                label: 'ประวัติ',
+                index: 1,
+                selectedIndex: _selectedTab,
+                onTap: () => setState(() => _selectedTab = 1),
+              ),
+              NavItem(
+                icon: Icons.logout,
+                label: 'ออกจากระบบ',
                 index: 1,
                 selectedIndex: _selectedTab,
                 onTap: () => setState(() => _selectedTab = 1),

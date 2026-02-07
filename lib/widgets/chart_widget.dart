@@ -393,7 +393,7 @@ class _SevenDayChartState extends State<SevenDayChart> {
           // Tab สำหรับเลือกดูข้อมูล
           // ==========================================
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildTabButton(0, 'Temp', Icons.thermostat, Colors.orange),
               _buildTabButton(1, 'pH', Icons.water_drop, Colors.green),

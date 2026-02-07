@@ -10,6 +10,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:wh2o/pages/home_page.dart';
+import 'package:wh2o/pages/record.dart';
 import 'package:wh2o/pages/register.dart';
 import 'package:wh2o/pages/login.dart';
 
@@ -39,7 +40,7 @@ class WaterMonitorApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       
       // กำหนดหน้าแรกที่จะแสดงตอนเปิดแอป
-      home: const LoginPage(),
+      home: const HistoricalDataScreen(),
     );
   }
 }

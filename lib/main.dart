@@ -1,46 +1,34 @@
-// ============================================
-// 📱 MAIN.DART - จุดเริ่มต้นของแอป
-// ============================================
-// ไฟล์นี้เป็นประตูหลักของแอปพลิเคชัน
-// ทำหน้าที่:
-// 1. เริ่มต้นแอป (runApp)
-// 2. ตั้งค่า Theme (สี, ฟอนต์)
-// 3. กำหนดหน้าแรก (Home Page)
-// ============================================
-
 import 'package:flutter/material.dart';
+import 'package:wh2o/config/app_colors.dart';
 import 'package:wh2o/pages/home_page.dart';
-import 'package:wh2o/pages/record.dart';
-import 'package:wh2o/pages/register.dart';
+import 'package:wh2o/pages/history_page.dart';
 import 'package:wh2o/pages/login.dart';
+import 'package:wh2o/pages/register.dart';
 
-/// ฟังก์ชันหลักที่ Flutter เรียกตอนเปิดแอป
-/// คิดเหมือนปุ่ม "เปิดเครื่อง" ของแอป
 void main() {
   runApp(const WaterMonitorApp());
 }
 
-/// Class หลักของแอป - ตั้งค่าพื้นฐานทั้งหมด
 class WaterMonitorApp extends StatelessWidget {
   const WaterMonitorApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // ชื่อแอปที่แสดงในระบบ
-      title: 'Water Quality Monitor',
-      
-      // ตั้งค่าธีม (สี, ฟอนต์) ของแอปทั้งหมด
-      theme: ThemeData(
-        primarySwatch: Colors.blue,  // สีหลักของแอป
-        fontFamily: 'Roboto',        // ฟอนต์ที่ใช้ทั้งแอป
-      ),
-      
-      // ปิดป้าย "DEBUG" มุมขวาบน
+      title: 'WH2O Monitor',
       debugShowCheckedModeBanner: false,
-      
-      // กำหนดหน้าแรกที่จะแสดงตอนเปิดแอป
-      home: const HistoricalDataScreen(),
+      theme: ThemeData(
+        primaryColor: AppColors.primaryBlue,
+        scaffoldBackgroundColor: AppColors.background,
+        useMaterial3: true,
+      ),
+      initialRoute: '/login', // เริ่มที่หน้า Login
+      routes: {
+        '/login': (context) => const LoginPage(),
+        '/register': (context) => const RegisterPage(),
+        '/home': (context) => const HomePage(),
+        '/history': (context) => const HistoryPage(),
+      },
     );
   }
 }

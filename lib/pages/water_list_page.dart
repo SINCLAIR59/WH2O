@@ -13,12 +13,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:wh2o/services/service.dart';
-import 'package:wh2o/constants/app_colors.dart';
+import 'package:wh2o/config/app_colors.dart';
 import 'package:wh2o/widgets/sensor_card.dart';
-
+import 'package:wh2o/widgets/water_data_row.dart';
 /// หน้าแสดงรายการข้อมูลทั้งหมด
 class WaterListPage extends StatefulWidget {
-  const WaterListPage({Key? key}) : super(key: key);
+  const WaterListPage({super.key});
 
   @override
   State<WaterListPage> createState() => _WaterListPageState();

@@ -1,19 +1,11 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MaterialApp(
-    home: LoginPage(),
-    debugShowCheckedModeBanner: false,
-  ));
-}
-
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // พื้นหลังสีน้ำเงินตามรูปต้นฉบับ
       backgroundColor: const Color(0xFF4F67FF),
       body: Column(
         children: [
@@ -37,7 +29,7 @@ class LoginPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 15),
                 const Text(
-                  'WH2O LOGIN"',
+                  'WH2O LOGIN',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -55,7 +47,7 @@ class LoginPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 40),
-          // ส่วนเนื้อหาที่เป็นสีขาว (Card ส่วนล่าง)
+          // ส่วนเนื้อหาที่เป็นสีขาว
           Expanded(
             child: Container(
               width: double.infinity,
@@ -124,7 +116,10 @@ class LoginPage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(15),
                           ),
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          // ✅ นำทางไปหน้า Home หลังเข้าสู่ระบบสำเร็จ
+                          Navigator.pushReplacementNamed(context, '/home');
+                        },
                         child: const Text(
                           'เข้าสู่ระบบ',
                           style: TextStyle(fontSize: 18, color: Colors.white),
@@ -136,7 +131,7 @@ class LoginPage extends StatelessWidget {
                     // ปุ่ม Social Login
                     Row(
                       children: [
-                        Expanded(child: _buildSocialButton('Google', 'assets/google_logo.png')), // อย่าลืมใส่ไฟล์รูปใน assets
+                        Expanded(child: _buildSocialButton('Google', 'assets/google_logo.png')),
                         const SizedBox(width: 15),
                         Expanded(child: _buildSocialButton('Facebook', Icons.facebook, color: Colors.blue)),
                       ],
@@ -150,7 +145,7 @@ class LoginPage extends StatelessWidget {
                         children: [
                           const Text('ยังไม่มีบัญชีใช่ไหม? '),
                           GestureDetector(
-                            onTap: () => Navigator.pop(context),
+                            onTap: () => Navigator.pushNamed(context, '/register'),  // ✅ แก้ไขเป็น pushNamed
                             child: const Text(
                               'ลงทะเบียนที่นี่',
                               style: TextStyle(
@@ -173,7 +168,7 @@ class LoginPage extends StatelessWidget {
   }
 
   // Widget สำหรับสร้างช่องกรอกข้อมูล
-  Widget _buildTextField({required String hint, required IconData icon, bool isPassword = false}) {
+  static Widget _buildTextField({required String hint, required IconData icon, bool isPassword = false}) {
     return TextField(
       obscureText: isPassword,
       decoration: InputDecoration(
@@ -195,7 +190,7 @@ class LoginPage extends StatelessWidget {
   }
 
   // Widget สำหรับสร้างปุ่ม Social
-  Widget _buildSocialButton(String label, dynamic icon, {Color? color}) {
+  static Widget _buildSocialButton(String label, dynamic icon, {Color? color}) {
     return OutlinedButton(
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 12),

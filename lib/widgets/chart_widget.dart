@@ -1,184 +1,88 @@
 // ============================================
-// 📊 CHART_WIDGET.DART - กราฟข้อมูล 7 วัน
-// ============================================
-// Widget นี้แสดงกราฟเส้นย้อนหลัง 7 วัน
-// Features:
-// - แสดงข้อมูล 4 ค่า: Temperature, pH, Oxygen, Salinity
-// - สลับดูแต่ละค่าได้
-// - แสดงจุดข้อมูลพร้อมค่า
-// - Gradient สวยงาม
+// 📊 CHART_WIDGET.DART - กราฟแสดงแนวโน้ม (ตามเวลาจริง)
 // ============================================
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:wh2o/constants/app_colors.dart';
+import 'package:wh2o/models/water_data.dart'; // ตรวจสอบว่า Import Model ถูกต้อง
 
-/// Widget กราฟแสดงข้อมูลย้อนหลัง 7 วัน
 class SevenDayChart extends StatefulWidget {
-  final List<dynamic> waterData; // ข้อมูลทั้งหมดจาก API
+  final List<dynamic> waterData;
 
-  const SevenDayChart({
-    super.key,
-    required this.waterData,
-  });
+  const SevenDayChart({super.key, required this.waterData});
 
   @override
   State<SevenDayChart> createState() => _SevenDayChartState();
 }
 
 class _SevenDayChartState extends State<SevenDayChart> {
-  // ==========================================
-  // State Variables
-  // ==========================================
+  int _selectedTab = 0; // 0=Temp, 1=pH, 2=O2, 3=Salinity
 
-  /// Tab ที่เลือกอยู่ (0=Temp, 1=pH, 2=O2, 3=Salt)
-  int _selectedTab = 0;
-
-  // ==========================================
-  // Helper Methods
-  // ==========================================
-
-  /// ดึงข้อมูล 7 วันล่าสุด และจัดกลุ่มตามวัน
-  List<Map<String, dynamic>> _getLast7DaysData() {
+  // แปลงข้อมูลและเรียงลำดับ
+  List<WaterData> _getChartDataPoints() {
     if (widget.waterData.isEmpty) return [];
 
-    // สร้าง Map เก็บข้อมูลแต่ละวัน (วัน -> ค่าเฉลี่ย)
-    Map<String, List<double>> dayData = {
-      'temperature': [],
-      'ph': [],
-      'oxygen': [],
-      'salinity': [],
-    };
+    // 1. แปลงเป็น WaterData Objects
+    List<WaterData> dataList = widget.waterData.map((d) {
+      if (d is WaterData) return d;
+      return WaterData.fromJson(d);
+    }).toList();
 
-    // เอาข้อมูลย้อนหลัง 7 วัน (สมมติ API ส่งมาเรียงตามเวลาล่าสุดก่อน)
-    final last7Days = widget.waterData.take(7).toList().reversed.toList();
+    // 2. เรียงตามเวลา (เก่า -> ใหม่)
+    dataList.sort((a, b) => a.measuredAt.compareTo(b.measuredAt));
 
-    for (var data in last7Days) {
-      dayData['temperature']!.add(_toDouble(data['temperature']));
-      dayData['ph']!.add(_toDouble(data['ph']));
-      dayData['oxygen']!.add(_toDouble(data['oxygen']));
-      dayData['salinity']!.add(_toDouble(data['salinity']));
+    // 3. ตัดเอาเฉพาะ N ตัวล่าสุด (เช่น 7-10 ตัวล่าสุด) เพื่อให้กราฟไม่แน่นเกินไป
+    // ถ้าอยากได้เยอะกว่านี้ แก้เลข 7 เป็น 10 หรือ 20 ได้เลยครับ
+    int count = 7;
+    if (dataList.length > count) {
+      dataList = dataList.sublist(dataList.length - count);
     }
 
-    // แปลงเป็น List<Map> สำหรับแสดงในกราฟ
-    List<Map<String, dynamic>> result = [];
-    for (int i = 0; i < last7Days.length; i++) {
-      result.add({
-        'day': i,
-        'temperature': dayData['temperature']![i],
-        'ph': dayData['ph']![i],
-        'oxygen': dayData['oxygen']![i],
-        'salinity': dayData['salinity']![i],
-      });
-    }
-
-    return result;
+    return dataList;
   }
 
-  /// แปลงค่าเป็น double
-  double _toDouble(dynamic value) {
-    if (value == null) return 0.0;
-    if (value is double) return value;
-    if (value is int) return value.toDouble();
-    if (value is String) return double.tryParse(value) ?? 0.0;
-    return 0.0;
-  }
-
-  /// ข้อมูลของแต่ละ Tab
   Map<String, dynamic> _getTabConfig(int index) {
     switch (index) {
-      case 0: // Temperature
-        return {
-          'label': 'อุณหภูมิ',
-          'unit': '°C',
-          'key': 'temperature',
-          'color': Colors.orange,
-          'gradientColors': [Colors.orange.shade300, Colors.orange.shade600],
-          'minY': 20.0,
-          'maxY': 35.0,
-        };
-      case 1: // pH
-        return {
-          'label': 'ค่า pH',
-          'unit': '',
-          'key': 'ph',
-          'color': Colors.green,
-          'gradientColors': [Colors.green.shade300, Colors.green.shade600],
-          'minY': 6.0,
-          'maxY': 9.0,
-        };
-      case 2: // Oxygen
-        return {
-          'label': 'ออกซิเจน',
-          'unit': 'mg/L',
-          'key': 'oxygen',
-          'color': Colors.blue,
-          'gradientColors': [Colors.blue.shade300, Colors.blue.shade600],
-          'minY': 4.0,
-          'maxY': 8.0,
-        };
-      case 3: // Salinity
-        return {
-          'label': 'ความเค็ม',
-          'unit': 'ppt',
-          'key': 'salinity',
-          'color': Colors.purple,
-          'gradientColors': [Colors.purple.shade300, Colors.purple.shade600],
-          'minY': 10.0,
-          'maxY': 20.0,
-        };
-      default:
-        return _getTabConfig(0);
+      case 0: return {
+        'label': 'อุณหภูมิ', 'unit': '°C',
+        'color': Colors.orange, 'minY': 20.0, 'maxY': 40.0,
+        'getter': (WaterData d) => d.temperature
+      };
+      case 1: return {
+        'label': 'pH', 'unit': '',
+        'color': Colors.green, 'minY': 5.0, 'maxY': 10.0,
+        'getter': (WaterData d) => d.ph
+      };
+      case 2: return {
+        'label': 'ออกซิเจน', 'unit': 'mg/L',
+        'color': Colors.blue, 'minY': 0.0, 'maxY': 10.0,
+        'getter': (WaterData d) => d.oxygen
+      };
+      case 3: return {
+        'label': 'ความเค็ม', 'unit': 'ppt',
+        'color': Colors.purple, 'minY': 0.0, 'maxY': 30.0,
+        'getter': (WaterData d) => d.salinity
+      };
+      default: return {};
     }
   }
-
-  /// สร้างข้อมูลจุดบนกราฟ
-  List<FlSpot> _getChartData() {
-    final data = _getLast7DaysData();
-    final config = _getTabConfig(_selectedTab);
-    final key = config['key'];
-
-    return data.asMap().entries.map((entry) {
-      return FlSpot(
-        entry.key.toDouble(),
-        _toDouble(entry.value[key]),
-      );
-    }).toList();
-  }
-
-  // ==========================================
-  // Build Method
-  // ==========================================
 
   @override
   Widget build(BuildContext context) {
+    final chartData = _getChartDataPoints();
     final config = _getTabConfig(_selectedTab);
-    final chartData = _getChartData();
+    final color = config['color'] as Color;
 
-    // ถ้าไม่มีข้อมูล แสดงข้อความ
     if (chartData.isEmpty) {
-      return Container(
-        height: 300,
-        margin: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: const Center(
-          child: Text(
-            'ไม่มีข้อมูลย้อนหลัง',
-            style: TextStyle(color: Colors.grey, fontSize: 16),
-          ),
-        ),
-      );
+      return const SizedBox(height: 200, child: Center(child: Text('ไม่มีข้อมูลกราฟ')));
     }
+
+    // สร้างจุดกราฟ
+    final spots = chartData.asMap().entries.map((entry) {
+      final index = entry.key.toDouble();
+      final val = (config['getter'] as Function(WaterData))(entry.value) as double;
+      return FlSpot(index, val);
+    }).toList();
 
     return Container(
       margin: const EdgeInsets.all(16),
@@ -187,197 +91,84 @@ class _SevenDayChartState extends State<SevenDayChart> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ==========================================
-          // ส่วนหัว: ชื่อกราฟ
-          // ==========================================
+          // Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'ข้อมูลย้อนหลัง',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2C3E50),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    config['label'],
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: config['color'],
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              // แสดงค่าล่าสุด
-              if (chartData.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: (config['color'] as Color).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${chartData.last.y.toStringAsFixed(1)} ${config['unit']}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: config['color'],
-                    ),
-                  ),
-                ),
+              const Text('แนวโน้มล่าสุด', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50))),
+              Text('${config['label']} (${config['unit']})', style: TextStyle(color: color, fontWeight: FontWeight.bold)),
             ],
           ),
+          const SizedBox(height: 20),
 
-          const SizedBox(height: 24),
-
-          // ==========================================
-          // กราฟ
-          // ==========================================
+          // Chart
           SizedBox(
             height: 200,
             child: LineChart(
               LineChartData(
-                // กำหนดช่วงข้อมูล
                 minY: config['minY'],
                 maxY: config['maxY'],
                 minX: 0,
-                maxX: chartData.length - 1.0,
-
-                // ตั้งค่า Grid
+                maxX: (chartData.length - 1).toDouble(),
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  horizontalInterval: (config['maxY'] - config['minY']) / 4,
-                  getDrawingHorizontalLine: (value) {
-                    return FlLine(
-                      color: Colors.grey.shade200,
-                      strokeWidth: 1,
-                    );
-                  },
+                  horizontalInterval: (config['maxY'] - config['minY']) / 5,
                 ),
-
-                // ตั้งค่าขอบ
                 titlesData: FlTitlesData(
-                  // แกน Y (ซ้าย)
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 40,
-                      interval: (config['maxY'] - config['minY']) / 4,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          value.toStringAsFixed(1),
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 30, getTitlesWidget: (value, meta) => Text(value.toInt().toString(), style: const TextStyle(fontSize: 10, color: Colors.grey)))),
 
-                  // แกน X (ล่าง)
+                  // แกนล่าง (เวลา)
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 30,
+                      interval: 1, // โชว์ทุกจุด
                       getTitlesWidget: (value, meta) {
-                        // แสดง "Day 1", "Day 2", ...
-                        final dayNum = value.toInt() + 1;
+                        final index = value.toInt();
+                        if (index < 0 || index >= chartData.length) return const SizedBox();
+
+                        final date = chartData[index].measuredAt;
+                        // แสดงเวลา HH:mm (เช่น 12:00)
+                        final timeStr = '${date.hour.toString().padLeft(2,'0')}:${date.minute.toString().padLeft(2,'0')}';
+
                         return Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            '$dayNum',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: Colors.grey,
-                            ),
-                          ),
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(timeStr, style: const TextStyle(fontSize: 10, color: Colors.grey)),
                         );
                       },
                     ),
-                  ),
-
-                  // ซ่อนแกนอื่น
-                  rightTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
                   ),
                 ),
-
-                // ซ่อนเส้นขอบ
                 borderData: FlBorderData(show: false),
-
-                // ตั้งค่าเส้นกราฟ
                 lineBarsData: [
                   LineChartBarData(
-                    spots: chartData,
+                    spots: spots,
                     isCurved: true,
-                    curveSmoothness: 0.3,
-                    color: config['color'],
+                    color: color,
                     barWidth: 3,
-                    isStrokeCapRound: true,
-                    dotData: FlDotData(
-                      show: true,
-                      getDotPainter: (spot, percent, barData, index) {
-                        return FlDotCirclePainter(
-                          radius: 4,
-                          color: Colors.white,
-                          strokeWidth: 2,
-                          strokeColor: config['color'],
-                        );
-                      },
-                    ),
-                    // Gradient ใต้เส้น
-                    belowBarData: BarAreaData(
-                      show: true,
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          (config['color'] as Color).withOpacity(0.3),
-                          (config['color'] as Color).withOpacity(0.0),
-                        ],
-                      ),
-                    ),
+                    dotData: const FlDotData(show: true),
+                    belowBarData: BarAreaData(show: true, color: color.withOpacity(0.1)),
                   ),
                 ],
-
-                // แสดงค่าเมื่อแตะ
+                // Tooltip แสดงวันและเวลา
                 lineTouchData: LineTouchData(
-                  enabled: true,
                   touchTooltipData: LineTouchTooltipData(
                     getTooltipItems: (touchedSpots) {
                       return touchedSpots.map((spot) {
+                        final index = spot.x.toInt();
+                        final date = chartData[index].measuredAt;
+                        final dateStr = '${date.day}/${date.month} ${date.hour}:${date.minute.toString().padLeft(2,'0')}';
                         return LineTooltipItem(
-                          '${spot.y.toStringAsFixed(1)} ${config['unit']}',
-                          const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
+                          '$dateStr\n${spot.y.toStringAsFixed(2)} ${config['unit']}',
+                          const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         );
                       }).toList();
                     },
@@ -389,11 +180,9 @@ class _SevenDayChartState extends State<SevenDayChart> {
 
           const SizedBox(height: 20),
 
-          // ==========================================
-          // Tab สำหรับเลือกดูข้อมูล
-          // ==========================================
+          // Tabs
           Row(
-             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildTabButton(0, 'Temp', Icons.thermostat, Colors.orange),
               _buildTabButton(1, 'pH', Icons.water_drop, Colors.green),
@@ -406,43 +195,25 @@ class _SevenDayChartState extends State<SevenDayChart> {
     );
   }
 
-  /// สร้างปุ่ม Tab
   Widget _buildTabButton(int index, String label, IconData icon, Color color) {
     final isSelected = _selectedTab == index;
-
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedTab = index;
-        });
-      },
+      onTap: () => setState(() => _selectedTab = index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? color.withOpacity(0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? color : Colors.grey.shade300,
-            width: 1.5,
-          ),
+          border: Border.all(color: isSelected ? color : Colors.grey.shade300),
         ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isSelected ? color : Colors.grey,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected ? color : Colors.grey,
-              ),
-            ),
+            Icon(icon, size: 16, color: isSelected ? color : Colors.grey),
+            if (isSelected) ...[
+              const SizedBox(width: 4),
+              Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color)),
+            ]
           ],
         ),
       ),

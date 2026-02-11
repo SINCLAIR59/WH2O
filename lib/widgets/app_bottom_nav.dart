@@ -8,11 +8,41 @@ class AppBottomNav extends StatelessWidget {
 
   void _onTap(BuildContext context, int index) {
     if (index == currentIndex) return;
-    switch (index) {
-      case 0: Navigator.pushReplacementNamed(context, '/home'); break;
-      case 1: Navigator.pushReplacementNamed(context, '/history'); break;
-      case 2: Navigator.pushReplacementNamed(context, '/login'); break;
+
+    if (index == 2) {
+      // ถ้ากดออกจากระบบ ให้โชว์ Dialog ก่อน
+      _showLogoutDialog(context);
+    } else {
+      // สำหรับเมนูอื่นๆ ให้เปลี่ยนหน้าตามปกติ
+      switch (index) {
+        case 0: Navigator.pushReplacementNamed(context, '/home'); break;
+        case 1: Navigator.pushReplacementNamed(context, '/history'); break;
+      }
     }
+  }
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('ยืนยันการออกจากระบบ'),
+          content: const Text('คุณต้องการออกจากระบบใช่หรือไม่?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), // ปิด Dialog
+              child: const Text('ยกเลิก', style: TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // ปิด Dialog
+                Navigator.pushReplacementNamed(context, '/login'); // ไปหน้า Login
+              },
+              child: const Text('ตกลง', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

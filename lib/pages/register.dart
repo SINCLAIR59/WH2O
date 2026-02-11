@@ -30,6 +30,11 @@ class _RegisterPageState extends State<RegisterPage> {
   void _handleRegister() {
     if (_formKey.currentState!.validate() && _acceptTerms) {
       // ลงทะเบียนสำเร็จ -> ไปหน้า Login
+      print("Username is: ${_usernameController.text}");
+      print("Email is: ${_emailController.text}");
+      print("P is: ${_passwordController.text}");
+      print("CP is: ${_confirmPasswordController.text}");
+
       Navigator.pushReplacementNamed(context, '/login');
     } else if (!_acceptTerms) {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+final TextEditingController _emailController = TextEditingController();
+final TextEditingController _passwordController = TextEditingController();
+
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
@@ -82,6 +85,7 @@ class LoginPage extends StatelessWidget {
                     _buildTextField(
                       hint: 'กรุณากรอกอีเมลของคุณ',
                       icon: Icons.email_outlined,
+                      controller : _emailController,
                     ),
 
                     const SizedBox(height: 20),
@@ -93,6 +97,7 @@ class LoginPage extends StatelessWidget {
                       hint: 'กรุณากรอกรหัสผ่านของคุณ',
                       icon: Icons.lock_outline,
                       isPassword: true,
+                        controller : _passwordController,
                     ),
 
                     const SizedBox(height: 10),
@@ -118,6 +123,9 @@ class LoginPage extends StatelessWidget {
                         ),
                         onPressed: () {
                           // ✅ นำทางไปหน้า Home หลังเข้าสู่ระบบสำเร็จ
+                          String email = _emailController.text;
+                          String password = _passwordController.text;
+                          print("Email is: $email $password");
                           Navigator.pushReplacementNamed(context, '/home');
                         },
                         child: const Text(
@@ -168,8 +176,9 @@ class LoginPage extends StatelessWidget {
   }
 
   // Widget สำหรับสร้างช่องกรอกข้อมูล
-  static Widget _buildTextField({required String hint, required IconData icon, bool isPassword = false}) {
+  static Widget _buildTextField({required String hint, required IconData icon, bool isPassword = false,required TextEditingController controller,}) {
     return TextField(
+      controller: controller,
       obscureText: isPassword,
       decoration: InputDecoration(
         hintText: hint,

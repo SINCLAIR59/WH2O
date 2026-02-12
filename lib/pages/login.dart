@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
 
 final TextEditingController _emailController = TextEditingController();
 final TextEditingController _passwordController = TextEditingController();
@@ -41,10 +42,7 @@ class LoginPage extends StatelessWidget {
                 ),
                 const Text(
                   'Environmental Monitoring System',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ],
             ),
@@ -80,24 +78,30 @@ class LoginPage extends StatelessWidget {
                     const SizedBox(height: 30),
 
                     // Input: อีเมล
-                    const Text('อีเมล', style: TextStyle(fontWeight: FontWeight.w500)),
+                    const Text(
+                      'อีเมล',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
                     const SizedBox(height: 8),
                     _buildTextField(
                       hint: 'กรุณากรอกอีเมลของคุณ',
                       icon: Icons.email_outlined,
-                      controller : _emailController,
+                      controller: _emailController,
                     ),
 
                     const SizedBox(height: 20),
 
                     // Input: รหัสผ่าน
-                    const Text('รหัสผ่าน', style: TextStyle(fontWeight: FontWeight.w500)),
+                    const Text(
+                      'รหัสผ่าน',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
                     const SizedBox(height: 8),
                     _buildTextField(
                       hint: 'กรุณากรอกรหัสผ่านของคุณ',
                       icon: Icons.lock_outline,
                       isPassword: true,
-                        controller : _passwordController,
+                      controller: _passwordController,
                     ),
 
                     const SizedBox(height: 10),
@@ -105,7 +109,10 @@ class LoginPage extends StatelessWidget {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {},
-                        child: const Text('ลืมรหัสผ่าน?', style: TextStyle(color: Color(0xFF4F67FF))),
+                        child: const Text(
+                          'ลืมรหัสผ่าน?',
+                          style: TextStyle(color: Color(0xFF4F67FF)),
+                        ),
                       ),
                     ),
 
@@ -121,12 +128,30 @@ class LoginPage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(15),
                           ),
                         ),
-                        onPressed: () {
-                          // ✅ นำทางไปหน้า Home หลังเข้าสู่ระบบสำเร็จ
-                          String email = _emailController.text;
-                          String password = _passwordController.text;
-                          print("Email is: $email $password");
-                          Navigator.pushReplacementNamed(context, '/home');
+
+                        onPressed: () async {
+                          // 1. เรียก API Login
+                          final result = await AuthService.login(
+                            _emailController.text,
+                            _passwordController.text,
+                          );
+
+                          // 2. เช็คผลลัพธ์
+                          if (result['status'] == 'ok') {
+                            if (context.mounted) {
+                              Navigator.pushReplacementNamed(context, '/home');
+                            }
+                          } else {
+                            // Login ไม่ผ่าน
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(result['message']),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
                         },
                         child: const Text(
                           'เข้าสู่ระบบ',
@@ -139,9 +164,20 @@ class LoginPage extends StatelessWidget {
                     // ปุ่ม Social Login
                     Row(
                       children: [
-                        Expanded(child: _buildSocialButton('Google', 'assets/google_logo.png')),
+                        Expanded(
+                          child: _buildSocialButton(
+                            'Google',
+                            'assets/google_logo.png',
+                          ),
+                        ),
                         const SizedBox(width: 15),
-                        Expanded(child: _buildSocialButton('Facebook', Icons.facebook, color: Colors.blue)),
+                        Expanded(
+                          child: _buildSocialButton(
+                            'Facebook',
+                            Icons.facebook,
+                            color: Colors.blue,
+                          ),
+                        ),
                       ],
                     ),
 
@@ -153,7 +189,10 @@ class LoginPage extends StatelessWidget {
                         children: [
                           const Text('ยังไม่มีบัญชีใช่ไหม? '),
                           GestureDetector(
-                            onTap: () => Navigator.pushNamed(context, '/register'),  // ✅ แก้ไขเป็น pushNamed
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              '/register',
+                            ), // ✅ แก้ไขเป็น pushNamed
                             child: const Text(
                               'ลงทะเบียนที่นี่',
                               style: TextStyle(
@@ -176,7 +215,12 @@ class LoginPage extends StatelessWidget {
   }
 
   // Widget สำหรับสร้างช่องกรอกข้อมูล
-  static Widget _buildTextField({required String hint, required IconData icon, bool isPassword = false,required TextEditingController controller,}) {
+  static Widget _buildTextField({
+    required String hint,
+    required IconData icon,
+    bool isPassword = false,
+    required TextEditingController controller,
+  }) {
     return TextField(
       controller: controller,
       obscureText: isPassword,
@@ -184,7 +228,9 @@ class LoginPage extends StatelessWidget {
         hintText: hint,
         hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
         prefixIcon: Icon(icon, color: Colors.grey),
-        suffixIcon: isPassword ? const Icon(Icons.visibility_outlined, color: Colors.grey) : null,
+        suffixIcon: isPassword
+            ? const Icon(Icons.visibility_outlined, color: Colors.grey)
+            : null,
         contentPadding: const EdgeInsets.symmetric(vertical: 15),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
@@ -211,7 +257,13 @@ class LoginPage extends StatelessWidget {
         children: [
           if (icon is IconData) Icon(icon, color: color, size: 24),
           const SizedBox(width: 8),
-          Text(label, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );

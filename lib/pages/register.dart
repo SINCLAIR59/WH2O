@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wh2o/services/auth_service.dart'; // ✅ Import Service
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -9,14 +10,18 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
+
+  // Controllers
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  // State Variables
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _acceptTerms = false;
+  bool _isLoading = false; // ✅ เพิ่มตัวแปรเช็คสถานะโหลด
 
   @override
   void dispose() {
@@ -27,19 +32,57 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  void _handleRegister() {
-    if (_formKey.currentState!.validate() && _acceptTerms) {
-      // ลงทะเบียนสำเร็จ -> ไปหน้า Login
-      print("Username is: ${_usernameController.text}");
-      print("Email is: ${_emailController.text}");
-      print("P is: ${_passwordController.text}");
-      print("CP is: ${_confirmPasswordController.text}");
+  // แก้ไขฟังก์ชันนี้
+  Future<void> _handleRegister() async {
+    if (_formKey.currentState!.validate()) {
+      if (!_acceptTerms) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('กรุณายอมรับข้อกำหนดและเงื่อนไข'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
 
-      Navigator.pushReplacementNamed(context, '/login');
-    } else if (!_acceptTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('กรุณายอมรับข้อกำหนดและเงื่อนไข')),
+      setState(() => _isLoading = true);
+
+      // 1. เรียก API สมัครสมาชิก
+      final registerResult = await AuthService.register(
+        _usernameController.text.trim(),
+        _emailController.text.trim(),
+        _passwordController.text,
       );
+
+      if (!context.mounted) return;
+
+      if (registerResult['status'] == 'ok') {
+        // 2. สมัครสำเร็จ -> สั่ง Login ต่อทันที!
+        final loginResult = await AuthService.login(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
+
+        if (!context.mounted) return;
+        setState(() => _isLoading = false);
+
+        if (loginResult['status'] == 'ok') {
+          // 3. Login สำเร็จ -> ไปหน้า Home เลย (และลบประวัติย้อนหลังออกให้หมด)
+          Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+        } else {
+          // กรณีแปลกๆ (สมัครได้ แต่ Login ไม่ได้) -> ส่งไปหน้า Login ปกติ
+          Navigator.pushReplacementNamed(context, '/login');
+        }
+      } else {
+        // สมัครไม่สำเร็จ
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(registerResult['message'] ?? 'เกิดข้อผิดพลาด'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -59,7 +102,8 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Column(
               children: [
                 const SizedBox(height: 40),
-                // Logo and Title
+
+                // --- Logo and Title ---
                 Container(
                   padding: const EdgeInsets.all(20),
                   child: Column(
@@ -97,7 +141,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 const SizedBox(height: 30),
 
-                // Form Container
+                // --- Form Container ---
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 20),
                   padding: const EdgeInsets.all(24),
@@ -117,37 +161,46 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Username
-                        const Text('ชื่อผู้ใช้',
-                            style: TextStyle(fontWeight: FontWeight.w600)),
+                        // 1. Username
+                        const Text(
+                          'ชื่อผู้ใช้',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _usernameController,
                           decoration: InputDecoration(
                             hintText: 'กรอกชื่อผู้ใช้',
-                            prefixIcon:
-                            const Icon(Icons.person_outline, color: Colors.grey),
+                            prefixIcon: const Icon(
+                              Icons.person_outline,
+                              color: Colors.grey,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          validator: (value) =>
-                          value?.isEmpty ?? true ? 'กรุณากรอกชื่อผู้ใช้' : null,
+                          validator: (value) => value?.isEmpty ?? true
+                              ? 'กรุณากรอกชื่อผู้ใช้'
+                              : null,
                         ),
 
                         const SizedBox(height: 16),
 
-                        // Email
-                        const Text('อีเมล',
-                            style: TextStyle(fontWeight: FontWeight.w600)),
+                        // 2. Email
+                        const Text(
+                          'อีเมล',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
                             hintText: 'กรอกอีเมล',
-                            prefixIcon:
-                            const Icon(Icons.email_outlined, color: Colors.grey),
+                            prefixIcon: const Icon(
+                              Icons.email_outlined,
+                              color: Colors.grey,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -161,30 +214,38 @@ class _RegisterPageState extends State<RegisterPage> {
 
                         const SizedBox(height: 16),
 
-                        // Password
-                        const Text('รหัสผ่าน',
-                            style: TextStyle(fontWeight: FontWeight.w600)),
+                        // 3. Password
+                        const Text(
+                          'รหัสผ่าน',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _passwordController,
                           obscureText: !_isPasswordVisible,
                           decoration: InputDecoration(
                             hintText: 'กรอกรหัสผ่าน',
-                            prefixIcon:
-                            const Icon(Icons.lock_outline, color: Colors.grey),
+                            prefixIcon: const Icon(
+                              Icons.lock_outline,
+                              color: Colors.grey,
+                            ),
                             suffixIcon: IconButton(
-                              icon: Icon(_isPasswordVisible
-                                  ? Icons.visibility
-                                  : Icons.visibility_off),
+                              icon: Icon(
+                                _isPasswordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                              ),
                               onPressed: () => setState(
-                                      () => _isPasswordVisible = !_isPasswordVisible),
+                                () => _isPasswordVisible = !_isPasswordVisible,
+                              ),
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                           validator: (value) {
-                            if (value?.isEmpty ?? true) return 'กรุณากรอกรหัสผ่าน';
+                            if (value?.isEmpty ?? true)
+                              return 'กรุณากรอกรหัสผ่าน';
                             if (value!.length < 6)
                               return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
                             return null;
@@ -193,24 +254,31 @@ class _RegisterPageState extends State<RegisterPage> {
 
                         const SizedBox(height: 16),
 
-                        // Confirm Password
-                        const Text('ยืนยันรหัสผ่าน',
-                            style: TextStyle(fontWeight: FontWeight.w600)),
+                        // 4. Confirm Password
+                        const Text(
+                          'ยืนยันรหัสผ่าน',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _confirmPasswordController,
                           obscureText: !_isConfirmPasswordVisible,
                           decoration: InputDecoration(
                             hintText: 'กรอกรหัสผ่านอีกครั้ง',
-                            prefixIcon:
-                            const Icon(Icons.lock_outline, color: Colors.grey),
+                            prefixIcon: const Icon(
+                              Icons.lock_outline,
+                              color: Colors.grey,
+                            ),
                             suffixIcon: IconButton(
-                              icon: Icon(_isConfirmPasswordVisible
-                                  ? Icons.visibility
-                                  : Icons.visibility_off),
-                              onPressed: () => setState(() =>
-                              _isConfirmPasswordVisible =
-                              !_isConfirmPasswordVisible),
+                              icon: Icon(
+                                _isConfirmPasswordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                              ),
+                              onPressed: () => setState(
+                                () => _isConfirmPasswordVisible =
+                                    !_isConfirmPasswordVisible,
+                              ),
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -227,7 +295,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                         const SizedBox(height: 16),
 
-                        // Terms Checkbox
+                        // 5. Checkbox
                         Row(
                           children: [
                             Checkbox(
@@ -246,7 +314,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                         const SizedBox(height: 20),
 
-                        // Register Button
+                        // 6. Register Button (แก้ไขให้มี Loading)
                         SizedBox(
                           width: double.infinity,
                           height: 50,
@@ -257,24 +325,38 @@ class _RegisterPageState extends State<RegisterPage> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            onPressed: _handleRegister,
-                            child: const Text(
-                              'ลงทะเบียน',
-                              style: TextStyle(fontSize: 16, color: Colors.white),
-                            ),
+                            // ถ้าโหลดอยู่ ให้กดไม่ได้ (null)
+                            onPressed: _isLoading ? null : _handleRegister,
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text(
+                                    'ลงทะเบียน',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                           ),
                         ),
 
                         const SizedBox(height: 20),
 
-                        // Login Link
+                        // 7. Login Link
                         Center(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Text('มีบัญชีอยู่แล้ว? '),
                               GestureDetector(
-                                onTap: () => Navigator.pushNamed(context, '/login'),
+                                // เปลี่ยน Navigator.pushNamed เป็น pop เพื่อกลับหน้าเดิมถ้ามาจาก Login
+                                onTap: () => Navigator.pop(context),
                                 child: const Text(
                                   'เข้าสู่ระบบ',
                                   style: TextStyle(
@@ -290,7 +372,6 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 40),
               ],
             ),
